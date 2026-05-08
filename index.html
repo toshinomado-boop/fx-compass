@@ -817,6 +817,8 @@ function renderQuestion() {
   document.getElementById('supplement-input').value = ''
   document.getElementById('followup-input').value = ''
   document.getElementById('supplement-label').textContent = q.supplement
+  const supplementBtn = document.querySelector('#supplement-area .btn-primary')
+  if (supplementBtn) { supplementBtn.disabled = false; supplementBtn.textContent = '送信する' }
 }
 
 function selectChoice(choice, btn) {
@@ -971,6 +973,8 @@ function renderDeepQuestion() {
   document.getElementById('deep-supplement-input').value = ''
   document.getElementById('deep-followup-input').value = ''
   document.getElementById('deep-supplement-label').textContent = q.supplement
+  const deepBtn = document.querySelector('#deep-supplement-area .btn-primary')
+  if (deepBtn) { deepBtn.disabled = false; deepBtn.textContent = '送信する' }
 }
 
 function selectDeepChoice(choice, btn) {
