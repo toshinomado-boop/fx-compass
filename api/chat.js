@@ -90,7 +90,7 @@ FXで思うような結果が出ていないトレーダーが、自分のトレ
 - 日本語で、丁寧に`
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
