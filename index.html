@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FXトレーダー思考OS診断</title>
+  <style>
+    :root {
+      --bg: #080c18;
+      --card: #0f1628;
+      --card-hover: #162035;
+      --border: #1e3054;
+      --blue: #2563eb;
+      --purple: #7c3aed;
+      --gold: #d97706;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --success: #10b981;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    /* ---- 共通スタイル ---- */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: #fff;
+      width: 100%;
+    }
+
+    .btn-secondary {
+      background: var(--card-hover);
+      color: var(--text);
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #b45309, var(--gold));
+      color: #fff;
+      width: 100%;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text3);
+      font-size: 0.875rem;
+      padding: 0.5rem 1rem;
+    }
+    .btn-ghost:hover { color: var(--text2); transform: none; }
+
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      padding: 0.875rem 1rem;
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: var(--blue); }
+    textarea::placeholder { color: var(--text3); }
+
+    /* ---- プログレスバー ---- */
+    .progress-wrap {
+      margin-bottom: 2rem;
+    }
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text3);
+      margin-bottom: 0.5rem;
+    }
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* ---- スタート画面 ---- */
+    .start-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--blue)22, var(--purple)22);
+      border: 1px solid var(--blue)44;
+      color: var(--blue);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      margin-bottom: 1.5rem;
+    }
+
+    .start-title {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+
+    .start-title span {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .start-desc {
+      color: var(--text2);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .start-meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .start-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--text3);
+    }
+    .start-meta-item span { color: var(--text2); }
+
+    /* ---- 質問画面 ---- */
+    .q-number {
+      font-size: 0.8rem;
+      color: var(--blue);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+    }
+
+    .q-text {
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.6;
+      margin-bottom: 1.75rem;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .choice-btn {
+      background: var(--card-hover);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 0.875rem 1.125rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .choice-btn:hover {
+      border-color: var(--blue);
+      background: #162035;
+    }
+    .choice-btn.selected {
+      border-color: var(--blue);
+      background: linear-gradient(135deg, var(--blue)18, var(--purple)10);
+      color: #fff;
+    }
+    .choice-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--text3);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .choice-btn.selected .choice-icon {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: #fff;
+    }
+
+    /* 補足・深掘りエリア */
+    .supplement-area, .followup-area {
+      display: none;
+    }
+    .supplement-area.visible, .followup-area.visible {
+      display: block;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .supplement-label {
+      font-size: 0.875rem;
+      color: var(--text2);
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .ai-bubble {
+      background: linear-gradient(135deg, var(--blue)14, var(--purple)10);
+      border: 1px solid var(--blue)33;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .ai-bubble-label {
+      font-size: 0.7rem;
+      color: var(--blue);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    .ai-bubble-text {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .section-gap { margin-top: 1.25rem; }
+
+    /* ---- ローディング画面 ---- */
+    .loading-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+    }
+    .loading-orb {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      animation: pulse 1.5s ease-in-out infinite;
+      margin-bottom: 2rem;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.7; }
+    }
+    .loading-text {
+      font-size: 1.1rem;
+      color: var(--text2);
+      margin-bottom: 0.5rem;
+    }
+    .loading-sub {
+      font-size: 0.85rem;
+      color: var(--text3);
+    }
+
+    /* ---- 結果画面 ---- */
+    .result-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .result-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--blue)22, var(--purple)22);
+      border: 1px solid var(--purple)44;
+      color: var(--purple);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 0.3rem 0.9rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+    .result-type {
+      font-size: clamp(1.4rem, 4vw, 1.9rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.25rem;
+    }
+
+    .result-section {
+      margin-bottom: 1.5rem;
+    }
+    .result-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .result-section-title::before {
+      content: '';
+      display: block;
+      width: 3px;
+      height: 14px;
+      background: linear-gradient(var(--blue), var(--purple));
+      border-radius: 2px;
+    }
+    .result-section-text {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--text2);
+    }
+
+    .result-message {
+      background: linear-gradient(135deg, var(--gold)18, #b4530910);
+      border: 1px solid var(--gold)33;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2rem 0;
+    }
+
+    .deep-cta {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .deep-cta-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .deep-cta-desc {
+      font-size: 0.875rem;
+      color: var(--text3);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ---- 最終結果 ---- */
+    .final-result-header {
+      text-align: center;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, var(--blue)12, var(--purple)12);
+      border: 1px solid var(--purple)33;
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+    }
+    .final-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 0.75rem;
+    }
+    .final-type {
+      font-size: clamp(1.3rem, 4vw, 1.75rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 1rem 0.75rem 3rem; }
+      .card { padding: 1.5rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ===== スタート画面 ===== -->
+  <div id="screen-start" class="screen active">
+    <div class="card fade-in">
+      <div class="start-badge">FX TRADER DIAGNOSIS</div>
+      <h1 class="start-title">あなたの<span>思考OS</span>を、<br>3つの問いで診断する</h1>
+      <p class="start-desc">
+        手法を探し続けているのに、結果が変わらない。<br>
+        その理由は、手法にあるのではないかもしれません。<br><br>
+        このツールは、あなたのトレードの「思考パターン」を<br>
+        浮かび上がらせます。答えた分だけ、見えてきます。
+      </p>
+      <div class="start-meta">
+        <div class="start-meta-item">⏱ <span>所要時間: 約3〜5分（3問コース）</span></div>
+        <div class="start-meta-item">💬 <span>自由回答あり</span></div>
+        <div class="start-meta-item">🔒 <span>回答は記録されません</span></div>
+      </div>
+      <button class="btn btn-primary" onclick="startDiagnosis()">診断を始める →</button>
+    </div>
+  </div>
+
+  <!-- ===== 質問画面（3問コース）===== -->
+  <div id="screen-question" class="screen">
+    <div class="fade-in">
+      <div class="progress-wrap">
+        <div class="progress-info">
+          <span id="progress-label">質問 1 / 3</span>
+          <span id="progress-pct">33%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-bar-fill" id="progress-fill" style="width: 33%"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="q-number" id="q-number">Q1</div>
+        <div class="q-text" id="q-text"></div>
+
+        <!-- 選択肢 -->
+        <div class="choices" id="choices-wrap"></div>
+
+        <!-- 補足入力 -->
+        <div class="supplement-area" id="supplement-area">
+          <p class="supplement-label" id="supplement-label"></p>
+          <textarea id="supplement-input" placeholder="自由に書いてください（箇条書きでも一言でもOK）" rows="4"></textarea>
+          <div class="section-gap">
+            <button class="btn btn-primary" onclick="submitSupplement()">送信する</button>
+          </div>
+        </div>
+
+        <!-- AIからの深掘り質問 -->
+        <div class="followup-area" id="followup-area">
+          <div class="ai-bubble">
+            <div class="ai-bubble-label">AI FOLLOWUP</div>
+            <div class="ai-bubble-text" id="followup-text"></div>
+          </div>
+          <textarea id="followup-input" placeholder="思ったことをそのまま書いてください" rows="4"></textarea>
+          <div class="section-gap">
+            <button class="btn btn-primary" id="next-btn" onclick="submitFollowup()">次へ進む →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ローディング画面 ===== -->
+  <div id="screen-loading" class="screen">
+    <div class="loading-wrap fade-in">
+      <div class="loading-orb"></div>
+      <p class="loading-text" id="loading-text">あなたの回答を分析しています</p>
+      <p class="loading-sub" id="loading-sub">思考パターンを読み解いています...</p>
+    </div>
+  </div>
+
+  <!-- ===== 3問コース 結果画面 ===== -->
+  <div id="screen-result" class="screen">
+    <div class="fade-in">
+      <div class="card">
+        <div class="result-header">
+          <div class="result-badge">DIAGNOSIS RESULT</div>
+          <div class="result-type" id="result-type"></div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-title">あなたの特徴</div>
+          <div class="result-section-text" id="result-feature"></div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-title">最速で変わるための処方箋</div>
+          <div class="result-section-text" id="result-prescription"></div>
+        </div>
+
+        <div class="result-message" id="result-message"></div>
+
+        <div class="divider"></div>
+
+        <div class="deep-cta">
+          <div class="deep-cta-title">もっと深く知りたいですか？</div>
+          <div class="deep-cta-desc">
+            さらに5問答えると、あなたのトレードパターンを<br>
+            より詳細に分析した「完全診断」をお届けします。
+          </div>
+          <button class="btn btn-gold" onclick="startDeepDiagnosis()">完全診断を受ける（+5問）→</button>
+          <div class="section-gap">
+            <button class="btn btn-ghost" onclick="restartDiagnosis()">最初からやり直す</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 深い診断 質問画面 ===== -->
+  <div id="screen-deep-question" class="screen">
+    <div class="fade-in">
+      <div class="progress-wrap">
+        <div class="progress-info">
+          <span id="deep-progress-label">完全診断 1 / 5</span>
+          <span id="deep-progress-pct">20%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-bar-fill" id="deep-progress-fill" style="width: 20%"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="q-number" id="deep-q-number">Q4</div>
+        <div class="q-text" id="deep-q-text"></div>
+
+        <div class="choices" id="deep-choices-wrap"></div>
+
+        <div class="supplement-area" id="deep-supplement-area">
+          <p class="supplement-label" id="deep-supplement-label"></p>
+          <textarea id="deep-supplement-input" placeholder="自由に書いてください" rows="4"></textarea>
+          <div class="section-gap">
+            <button class="btn btn-primary" onclick="submitDeepSupplement()">送信する</button>
+          </div>
+        </div>
+
+        <div class="followup-area" id="deep-followup-area">
+          <div class="ai-bubble">
+            <div class="ai-bubble-label">AI FOLLOWUP</div>
+            <div class="ai-bubble-text" id="deep-followup-text"></div>
+          </div>
+          <textarea id="deep-followup-input" placeholder="思ったことをそのまま書いてください" rows="4"></textarea>
+          <div class="section-gap">
+            <button class="btn btn-primary" id="deep-next-btn" onclick="submitDeepFollowup()">次へ進む →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 深い診断 ローディング ===== -->
+  <div id="screen-deep-loading" class="screen">
+    <div class="loading-wrap fade-in">
+      <div class="loading-orb"></div>
+      <p class="loading-text">完全診断を生成しています</p>
+      <p class="loading-sub">あなたの8つの回答から、思考のパターンを解析中...</p>
+    </div>
+  </div>
+
+  <!-- ===== 完全診断 結果画面 ===== -->
+  <div id="screen-deep-result" class="screen">
+    <div class="fade-in">
+      <div class="card">
+        <div class="final-result-header">
+          <div class="final-badge">COMPLETE DIAGNOSIS</div>
+          <div class="final-type" id="deep-result-type"></div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-title">あなたの思考OSの全体像</div>
+          <div class="result-section-text" id="deep-result-feature"></div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-title">あなたが変わるための道筋</div>
+          <div class="result-section-text" id="deep-result-prescription"></div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-title">今すぐ始められる一歩</div>
+          <div class="result-section-text" id="deep-result-action"></div>
+        </div>
+
+        <div class="result-message" id="deep-result-message"></div>
+
+        <button class="btn btn-ghost" onclick="restartDiagnosis()" style="width:100%; margin-top:0.5rem;">最初からやり直す</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ===== データ定義 =====
+
+const QUESTIONS = [
+  {
+    id: 'q1',
+    number: 'Q1',
+    text: 'FXを続けている（または始めた）理由を教えてください',
+    supplement: 'それがあなたにとって大切な理由を、少し教えてください',
+    choices: [
+      '経済的自由を手に入れたい',
+      '本業以外の収入源が欲しい',
+      'トレード自体が面白い・好き',
+      '人に勧められて始めた'
+    ]
+  },
+  {
+    id: 'q2',
+    number: 'Q2',
+    text: 'うまくいかなかったとき、次にどんな行動をとりましたか',
+    supplement: 'そのとき、頭の中でどんなことを考えていましたか',
+    choices: [
+      '新しい手法・インジケーターを探した',
+      'ルールや設定を見直した',
+      'しばらくトレードを休んだ',
+      '特に何もしなかった'
+    ]
+  },
+  {
+    id: 'q3',
+    number: 'Q3',
+    text: '今、何があれば状況が変わると思っていますか',
+    supplement: 'それが手に入ったとして、何が変わると思いますか',
+    choices: [
+      '勝率の高い手法・エントリーポイント',
+      'メンタル・感情のコントロール',
+      '資金管理・リスク管理の知識',
+      '自分のトレードパターンの把握'
+    ]
+  }
+]
+
+const DEEP_QUESTIONS = [
+  {
+    id: 'q4',
+    number: 'Q4',
+    text: 'エントリーを決めるとき、一番の判断材料は何ですか',
+    supplement: 'そのとき、どのくらい自信がありますか',
+    choices: [
+      'チャートのパターン・テクニカル分析',
+      '自分のルール・システム',
+      '経験的な感覚・直感',
+      '他の人の意見・分析'
+    ]
+  },
+  {
+    id: 'q5',
+    number: 'Q5',
+    text: '負けたトレードを振り返るとき、最初に気になることは何ですか',
+    supplement: 'その振り返りは、次のトレードに活かせていますか',
+    choices: [
+      'エントリータイミングのズレ',
+      '損切り・利確ラインの問題',
+      'そのときの感情・心理状態',
+      '手法自体の問題'
+    ]
+  },
+  {
+    id: 'q6',
+    number: 'Q6',
+    text: '理想のトレーダーの姿を一言で表すとしたら',
+    supplement: '今の自分は、その姿にどれくらい近いと感じますか',
+    choices: [
+      '冷静で感情に左右されない',
+      'ルール通りに淡々とこなせる',
+      '相場を読む力がある',
+      '稼げる仕組みを持っている'
+    ]
+  },
+  {
+    id: 'q7',
+    number: 'Q7',
+    text: 'トレードで一番「やってしまった」と感じる場面はどれですか',
+    supplement: 'それはどのくらいの頻度でありますか',
+    choices: [
+      '損切りできずに損失が拡大した',
+      'ルールを破ってエントリーした',
+      '利益を早く確定しすぎた',
+      '相場を見すぎて疲弊した'
+    ]
+  },
+  {
+    id: 'q8',
+    number: 'Q8',
+    text: '半年後、どんな状態になっていたいですか',
+    supplement: 'そのために今、一番の障壁は何だと感じていますか',
+    choices: [
+      '安定的に利益を出し続けている',
+      '感情に振り回されずトレードできている',
+      '自分だけのスタイルが確立している',
+      'トレードを心から楽しめている'
+    ]
+  }
+]
+
+// ===== 状態管理 =====
+const state = {
+  currentQ: 0,        // 3問コース: 0-2
+  currentDeepQ: 0,    // 深いコース: 0-4
+  selectedChoice: '',
+  messages: [],       // Claude APIに送る会話履歴（3問コース）
+  deepMessages: [],   // 深いコース用
+  isDeep: false
+}
+
+// ===== ユーティリティ =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  window.scrollTo(0, 0)
+}
+
+function scrollToBottom() {
+  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100)
+}
+
+// ===== スタート =====
+function startDiagnosis() {
+  state.currentQ = 0
+  state.messages = []
+  renderQuestion()
+  showScreen('screen-question')
+}
+
+// ===== 質問レンダリング（3問コース）=====
+function renderQuestion() {
+  const q = QUESTIONS[state.currentQ]
+  const step = state.currentQ + 1
+  const pct = Math.round((step / 3) * 100)
+
+  document.getElementById('progress-label').textContent = `質問 ${step} / 3`
+  document.getElementById('progress-pct').textContent = `${pct}%`
+  document.getElementById('progress-fill').style.width = `${pct}%`
+  document.getElementById('q-number').textContent = q.number
+  document.getElementById('q-text').textContent = q.text
+
+  // 選択肢生成
+  const choicesWrap = document.getElementById('choices-wrap')
+  choicesWrap.innerHTML = ''
+  const labels = ['A', 'B', 'C', 'D']
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button')
+    btn.className = 'choice-btn'
+    btn.innerHTML = `<span class="choice-icon">${labels[i]}</span>${c}`
+    btn.onclick = () => selectChoice(c, btn)
+    choicesWrap.appendChild(btn)
+  })
+
+  // リセット
+  state.selectedChoice = ''
+  document.getElementById('supplement-area').classList.remove('visible')
+  document.getElementById('followup-area').classList.remove('visible')
+  document.getElementById('supplement-input').value = ''
+  document.getElementById('followup-input').value = ''
+  document.getElementById('supplement-label').textContent = q.supplement
+}
+
+function selectChoice(choice, btn) {
+  state.selectedChoice = choice
+  document.querySelectorAll('#choices-wrap .choice-btn').forEach(b => b.classList.remove('selected'))
+  btn.classList.add('selected')
+  document.getElementById('supplement-area').classList.add('visible')
+  scrollToBottom()
+}
+
+async function submitSupplement() {
+  const supplement = document.getElementById('supplement-input').value.trim()
+  if (!supplement) {
+    document.getElementById('supplement-input').placeholder = '何か書いてから送信してください'
+    return
+  }
+
+  const q = QUESTIONS[state.currentQ]
+  const userMessage = `【質問】${q.text}\n【選択肢】${state.selectedChoice}\n【補足】${supplement}`
+
+  state.messages.push({ role: 'user', content: userMessage })
+
+  // ボタンを無効化
+  document.querySelector('#supplement-area .btn-primary').disabled = true
+  document.querySelector('#supplement-area .btn-primary').textContent = '送信中...'
+
+  try {
+    const followupText = await callAPI(state.messages, 'followup')
+    state.messages.push({ role: 'assistant', content: followupText })
+
+    document.getElementById('followup-text').textContent = followupText
+    document.getElementById('supplement-area').classList.remove('visible')
+    document.getElementById('followup-area').classList.add('visible')
+    scrollToBottom()
+  } catch (e) {
+    alert('通信エラーが発生しました。APIキーの設定を確認してください。')
+    document.querySelector('#supplement-area .btn-primary').disabled = false
+    document.querySelector('#supplement-area .btn-primary').textContent = '送信する'
+  }
+}
+
+async function submitFollowup() {
+  const answer = document.getElementById('followup-input').value.trim()
+  if (!answer) {
+    document.getElementById('followup-input').placeholder = '何か書いてから進んでください'
+    return
+  }
+
+  state.messages.push({ role: 'user', content: answer })
+
+  state.currentQ++
+  if (state.currentQ < 3) {
+    renderQuestion()
+    showScreen('screen-question')
+  } else {
+    await generateResult()
+  }
+}
+
+// ===== 診断結果生成 =====
+async function generateResult() {
+  showScreen('screen-loading')
+  document.getElementById('loading-text').textContent = 'あなたの回答を分析しています'
+  document.getElementById('loading-sub').textContent = '思考パターンを読み解いています...'
+
+  try {
+    const diagnosis = await callAPI(state.messages, 'diagnose')
+    const parsed = parseDiagnosis(diagnosis)
+    renderResult(parsed)
+    showScreen('screen-result')
+  } catch (e) {
+    alert('診断の生成に失敗しました。もう一度お試しください。')
+    showScreen('screen-question')
+  }
+}
+
+function parseDiagnosis(text) {
+  const result = { type: '', feature: '', prescription: '', message: '' }
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+
+  let current = ''
+  for (const line of lines) {
+    if (line.includes('【タイプ名】')) {
+      current = 'type'
+      const val = line.replace('【タイプ名】', '').trim()
+      if (val) result.type = val
+    } else if (line.includes('【あなたの特徴】')) {
+      current = 'feature'
+    } else if (line.includes('【処方箋】') || line.includes('最速で変わる') || line.includes('処方箋')) {
+      current = 'prescription'
+    } else if (line.includes('【メッセージ】') || line.includes('あなたへのメッセージ') || line.includes('一言メッセージ')) {
+      current = 'message'
+    } else if (line.startsWith('===') || line.startsWith('---')) {
+      // skip
+    } else {
+      if (current === 'type' && !result.type) result.type = line
+      else if (current === 'feature') result.feature += (result.feature ? '\n' : '') + line
+      else if (current === 'prescription') result.prescription += (result.prescription ? '\n' : '') + line
+      else if (current === 'message') result.message += (result.message ? '\n' : '') + line
+    }
+  }
+
+  // フォールバック: パースが失敗した場合、テキスト全体を分割して表示
+  if (!result.type) result.type = 'あなただけのタイプ'
+  if (!result.feature) result.feature = text
+  if (!result.prescription) result.prescription = '詳細な分析結果は上記をご覧ください。'
+  if (!result.message) result.message = 'あなたの気づきが、次のトレードを変えます。'
+
+  return result
+}
+
+function renderResult(parsed) {
+  document.getElementById('result-type').textContent = parsed.type
+  document.getElementById('result-feature').innerHTML = parsed.feature.replace(/\n/g, '<br>')
+  document.getElementById('result-prescription').innerHTML = parsed.prescription.replace(/\n/g, '<br>')
+  document.getElementById('result-message').innerHTML = parsed.message.replace(/\n/g, '<br>')
+}
+
+// ===== 深いコース =====
+function startDeepDiagnosis() {
+  state.currentDeepQ = 0
+  state.deepMessages = [...state.messages] // 3問の会話履歴を引き継ぐ
+  renderDeepQuestion()
+  showScreen('screen-deep-question')
+}
+
+function renderDeepQuestion() {
+  const q = DEEP_QUESTIONS[state.currentDeepQ]
+  const step = state.currentDeepQ + 1
+  const pct = Math.round((step / 5) * 100)
+
+  document.getElementById('deep-progress-label').textContent = `完全診断 ${step} / 5`
+  document.getElementById('deep-progress-pct').textContent = `${pct}%`
+  document.getElementById('deep-progress-fill').style.width = `${pct}%`
+  document.getElementById('deep-q-number').textContent = q.number
+  document.getElementById('deep-q-text').textContent = q.text
+
+  const choicesWrap = document.getElementById('deep-choices-wrap')
+  choicesWrap.innerHTML = ''
+  const labels = ['A', 'B', 'C', 'D']
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button')
+    btn.className = 'choice-btn'
+    btn.innerHTML = `<span class="choice-icon">${labels[i]}</span>${c}`
+    btn.onclick = () => selectDeepChoice(c, btn)
+    choicesWrap.appendChild(btn)
+  })
+
+  state.selectedChoice = ''
+  document.getElementById('deep-supplement-area').classList.remove('visible')
+  document.getElementById('deep-followup-area').classList.remove('visible')
+  document.getElementById('deep-supplement-input').value = ''
+  document.getElementById('deep-followup-input').value = ''
+  document.getElementById('deep-supplement-label').textContent = q.supplement
+}
+
+function selectDeepChoice(choice, btn) {
+  state.selectedChoice = choice
+  document.querySelectorAll('#deep-choices-wrap .choice-btn').forEach(b => b.classList.remove('selected'))
+  btn.classList.add('selected')
+  document.getElementById('deep-supplement-area').classList.add('visible')
+  scrollToBottom()
+}
+
+async function submitDeepSupplement() {
+  const supplement = document.getElementById('deep-supplement-input').value.trim()
+  if (!supplement) {
+    document.getElementById('deep-supplement-input').placeholder = '何か書いてから送信してください'
+    return
+  }
+
+  const q = DEEP_QUESTIONS[state.currentDeepQ]
+  const userMessage = `【質問】${q.text}\n【選択肢】${state.selectedChoice}\n【補足】${supplement}`
+  state.deepMessages.push({ role: 'user', content: userMessage })
+
+  document.querySelector('#deep-supplement-area .btn-primary').disabled = true
+  document.querySelector('#deep-supplement-area .btn-primary').textContent = '送信中...'
+
+  try {
+    const followupText = await callAPI(state.deepMessages, 'followup')
+    state.deepMessages.push({ role: 'assistant', content: followupText })
+
+    document.getElementById('deep-followup-text').textContent = followupText
+    document.getElementById('deep-supplement-area').classList.remove('visible')
+    document.getElementById('deep-followup-area').classList.add('visible')
+    scrollToBottom()
+  } catch (e) {
+    alert('通信エラーが発生しました。')
+    document.querySelector('#deep-supplement-area .btn-primary').disabled = false
+    document.querySelector('#deep-supplement-area .btn-primary').textContent = '送信する'
+  }
+}
+
+async function submitDeepFollowup() {
+  const answer = document.getElementById('deep-followup-input').value.trim()
+  if (!answer) {
+    document.getElementById('deep-followup-input').placeholder = '何か書いてから進んでください'
+    return
+  }
+
+  state.deepMessages.push({ role: 'user', content: answer })
+  state.currentDeepQ++
+
+  if (state.currentDeepQ < 5) {
+    renderDeepQuestion()
+    showScreen('screen-deep-question')
+  } else {
+    await generateDeepResult()
+  }
+}
+
+async function generateDeepResult() {
+  showScreen('screen-deep-loading')
+
+  try {
+    const diagnosis = await callAPI(state.deepMessages, 'deep_diagnose')
+    const parsed = parseDeepDiagnosis(diagnosis)
+    renderDeepResult(parsed)
+    showScreen('screen-deep-result')
+  } catch (e) {
+    alert('診断の生成に失敗しました。もう一度お試しください。')
+    showScreen('screen-deep-question')
+  }
+}
+
+function parseDeepDiagnosis(text) {
+  const result = { type: '', feature: '', prescription: '', action: '', message: '' }
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+  let current = ''
+
+  for (const line of lines) {
+    if (line.includes('【タイプ名】')) { current = 'type'; const v = line.replace('【タイプ名】','').trim(); if(v) result.type=v }
+    else if (line.includes('【思考OSの全体像】') || line.includes('全体像')) { current = 'feature' }
+    else if (line.includes('【道筋】') || line.includes('変わるための')) { current = 'prescription' }
+    else if (line.includes('【今すぐ始める】') || line.includes('一歩')) { current = 'action' }
+    else if (line.includes('【メッセージ】') || line.includes('あなたへ')) { current = 'message' }
+    else if (line.startsWith('===') || line.startsWith('---')) { /* skip */ }
+    else {
+      if (current === 'type' && !result.type) result.type = line
+      else if (current === 'feature') result.feature += (result.feature ? '\n' : '') + line
+      else if (current === 'prescription') result.prescription += (result.prescription ? '\n' : '') + line
+      else if (current === 'action') result.action += (result.action ? '\n' : '') + line
+      else if (current === 'message') result.message += (result.message ? '\n' : '') + line
+    }
+  }
+
+  if (!result.type) result.type = 'あなたの思考OS'
+  if (!result.feature) result.feature = text
+  if (!result.prescription) result.prescription = '詳細は上記の分析をご覧ください。'
+  if (!result.action) result.action = 'まず、今日のトレードを一行だけ振り返ってみてください。'
+  if (!result.message) result.message = 'あなたの気づきが、本当のトレードの始まりです。'
+
+  return result
+}
+
+function renderDeepResult(parsed) {
+  document.getElementById('deep-result-type').textContent = parsed.type
+  document.getElementById('deep-result-feature').innerHTML = parsed.feature.replace(/\n/g, '<br>')
+  document.getElementById('deep-result-prescription').innerHTML = parsed.prescription.replace(/\n/g, '<br>')
+  document.getElementById('deep-result-action').innerHTML = parsed.action.replace(/\n/g, '<br>')
+  document.getElementById('deep-result-message').innerHTML = parsed.message.replace(/\n/g, '<br>')
+}
+
+// ===== リスタート =====
+function restartDiagnosis() {
+  state.currentQ = 0
+  state.currentDeepQ = 0
+  state.messages = []
+  state.deepMessages = []
+  state.selectedChoice = ''
+  showScreen('screen-start')
+}
+
+// ===== Claude API 呼び出し =====
+async function callAPI(messages, mode) {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages, mode })
+  })
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}))
+    throw new Error(err.error || 'API error')
+  }
+
+  const data = await response.json()
+  return data.content
+}
+</script>
+</body>
+</html>
