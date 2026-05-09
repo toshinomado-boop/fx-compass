@@ -849,7 +849,7 @@ async function submitSupplement() {
     const followupText = await callAPI(state.messages, 'followup')
     state.messages.push({ role: 'assistant', content: followupText })
 
-    document.getElementById('followup-text').textContent = followupText
+    document.getElementById('followup-text').textContent = stripMarkdown(followupText)
     document.getElementById('supplement-area').classList.remove('visible')
     document.getElementById('followup-area').classList.add('visible')
     scrollToBottom()
@@ -1006,7 +1006,7 @@ async function submitDeepSupplement() {
     const followupText = await callAPI(state.deepMessages, 'followup')
     state.deepMessages.push({ role: 'assistant', content: followupText })
 
-    document.getElementById('deep-followup-text').textContent = followupText
+    document.getElementById('deep-followup-text').textContent = stripMarkdown(followupText)
     document.getElementById('deep-supplement-area').classList.remove('visible')
     document.getElementById('deep-followup-area').classList.add('visible')
     scrollToBottom()
