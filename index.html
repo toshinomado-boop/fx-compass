@@ -895,15 +895,20 @@ async function generateResult() {
   }
 }
 
+function stripMarkdown(text) {
+  return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')
+}
+
 function parseDiagnosis(text) {
   const result = { type: '', feature: '', prescription: '', message: '' }
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+  const lines = text.split('\n').map(l => l.trim())
 
   let current = ''
   for (const line of lines) {
+    if (!line || line.startsWith('===') || line.startsWith('---')) continue
     if (line.includes('【タイプ名】')) {
       current = 'type'
-      const val = line.replace('【タイプ名】', '').trim()
+      const val = line.replace('【タイプ名】', '').replace(/[（(].*/, '').trim()
       if (val) result.type = val
     } else if (line.includes('【あなたの特徴】')) {
       current = 'feature'
@@ -911,19 +916,17 @@ function parseDiagnosis(text) {
       current = 'prescription'
     } else if (line.includes('【メッセージ】') || line.includes('あなたへのメッセージ') || line.includes('一言メッセージ')) {
       current = 'message'
-    } else if (line.startsWith('===') || line.startsWith('---')) {
-      // skip
     } else {
-      if (current === 'type' && !result.type) result.type = line
-      else if (current === 'feature') result.feature += (result.feature ? '\n' : '') + line
-      else if (current === 'prescription') result.prescription += (result.prescription ? '\n' : '') + line
-      else if (current === 'message') result.message += (result.message ? '\n' : '') + line
+      const cleaned = stripMarkdown(line)
+      if (current === 'type' && !result.type) result.type = cleaned
+      else if (current === 'feature') result.feature += (result.feature ? '\n' : '') + cleaned
+      else if (current === 'prescription') result.prescription += (result.prescription ? '\n' : '') + cleaned
+      else if (current === 'message') result.message += (result.message ? '\n' : '') + cleaned
     }
   }
 
-  // フォールバック: パースが失敗した場合、テキスト全体を分割して表示
   if (!result.type) result.type = 'あなただけのタイプ'
-  if (!result.feature) result.feature = text
+  if (!result.feature) result.feature = stripMarkdown(text)
   if (!result.prescription) result.prescription = '詳細な分析結果は上記をご覧ください。'
   if (!result.message) result.message = 'あなたの気づきが、次のトレードを変えます。'
 
